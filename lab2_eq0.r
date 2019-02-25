@@ -44,10 +44,38 @@ Bajar_Precios <- function(Columns, Tickers, Fecha_In, Fecha_Fn) {
 }
 
 # Precios a solicitar con QUANDL
-cs <- c("date", "open","high","low","close")
+cs <- c("date","open","low","close")
 
 # Fechas para analizar este caso
 fs <- c("2017-01-01", "2018-01-01")
 
 # Leer archivo con informacion del ETF
 Datos_ETF <- read.csv("Datos/IAK_holdings.csv", row.names=NULL, skip=10, stringsAsFactors=FALSE)
+
+# guardar tickers
+tk <- Datos_ETF$Ticker
+
+# Descargar Precios
+Datos <- list()
+
+for(i in 1:length(tk)) {
+  Datos[[i]] <- Bajar_Precios(Columns=cs, Ticker=tk[i], Fecha_In=fs[1], Fecha_Fn=fs[2])
+}
+names(Datos) <- tk
+
+# Cambiar el orden de los datos que previamente descargamos
+for(i in 1:length(tk)){
+  Datos[[i]] <- Datos[[i]][order(Datos[[i]][,1]),]
+}
+
+# proceso para encontrar y seleccionar solo los tickers con la misma cantidad de precios
+longitudes <- c()
+
+for(i in 1:length(Datos)){
+  longitudes[i] <- length(Datos[[i]]$date)
+}
+
+maximo <- max(longitudes)
+completos <- which(longitudes == maximo)
+
+Datos <- Datos[completos]
